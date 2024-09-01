@@ -16,6 +16,8 @@
   {%- set on_schema_change = incremental_validate_on_schema_change(config.get('on_schema_change'), default='ignore') -%}
 
   {%- set intermediate_relation = make_intermediate_relation(target_relation)-%}
+  {% set intermediate_relation = target_relation.incorporate(path={"identifier": target_relation.identifier
+         + '__intermediate_relation_' + invocation_id.replace('-', '_')}) %}
   {%- set backup_relation_type = 'table' if existing_relation is none else existing_relation.type -%}
   {%- set backup_relation = make_backup_relation(target_relation, backup_relation_type) -%}
   {%- set preexisting_intermediate_relation = load_cached_relation(intermediate_relation)-%}
