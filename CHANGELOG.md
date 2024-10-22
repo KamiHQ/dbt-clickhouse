@@ -1,28 +1,49 @@
-### Release [1.8.2], 2024-08-22
-### Bug Fix
-* It is now possible to add sn empty seed without rows.
-* Fix `__dbt_backup` dropping when working on cluster.
-#### Improvements
-* You can now add projections to tables. The projection config should be added to the model config, for instance:
-```python
-{{ config(
-       materialized='%s',
-       projections=[
-           {
-               'name': 'your_projection_name',
-               'query': 'your_projection_query'
-           }
-       ]
-) }}
-```
-Please be aware that this feature was added to distributed materialization as well, but might not fully function.
-* Added a new *experimental* incremental strategy - `insert_overwrite` was added which replaces existing data in a target table partition by partition, ensuring only the specified partitions are overwritten with new data, which helps maintain performance and data consistency. This feature was not tested with distribution models and might not work with such materializations.
-[Anton Bryzgalov](https://github.com/bryzgaloff) Thank you for your contribution!
-* Schema changes for incremental models were improved and now include a `sync_all_column` option. For more information please [review this PR](https://github.com/ClickHouse/dbt-clickhouse/pull/332).
-[Can Bekleyici](https://github.com/canbekley) huge thanks for your contribution. 
-* Support query settings in `view` materialization.
-* Improve `listagg` macro. [PR](https://github.com/ClickHouse/dbt-clickhouse/pull/318).
+### Release [1.8.4], 2024-09-17
+### Improvement
+* The S3 help macro now support a `role_arn` parameter as an alternative way to provide authentication for S3 based models.  Thanks to
+[Mitchell Bregman](https://github.com/mitchbregs) for the contribution!
 
+### Release [1.8.3], 2024-09-01
+### Bug Fixes
+* An [issue](https://github.com/ClickHouse/dbt-clickhouse/issues/348) was detected when using multiple projections. We solved it and added a test to cover that use case. ([#349](https://github.com/ClickHouse/dbt-clickhouse/pull/349))
+
+### Documentation
+* A [CONTRIBUTING.md](CONTRIBUTING.md) file was added to the repo. Please follow the instructions prior contributing.
+
+### Release [1.8.2], 2024-08-22
+#### New Features
+* [ClickHouse projections](https://clickhouse.com/docs/en/sql-reference/statements/alter/projection) are now fully supported for `table` materialization, and partly supported for `distributed_table` materialization.
+The projection config should be added to the model config ([#342](https://github.com/ClickHouse/dbt-clickhouse/pull/342)), for instance: 
+  ```python
+  {{ config(
+         materialized='%s',
+         projections=[
+             {
+                 'name': 'your_projection_name',
+                 'query': 'your_projection_query'
+             }
+         ]
+  ) }}
+  ```
+ 
+#### Bug Fixes
+* Until this release, when writing tests, it was not possible to pass empty seed data. ([#341](https://github.com/ClickHouse/dbt-clickhouse/pull/341))
+* When a cluster was used, the adapter left a few `__dbt_backup` tables in the schema. After the fix, these backup tables are now properly dropped. ([#326](https://github.com/ClickHouse/dbt-clickhouse/pull/326))
+* Due to [this GitHub change](https://github.com/actions/runner-images/issues/9692), we needed to adjust the `docker compose` command in our tests. ([#334](https://github.com/ClickHouse/dbt-clickhouse/pull/334))
+
+#### Improvements
+
+* Added a new **experimental** incremental strategy, `insert_overwrite`, which replaces existing data in a target table partition by partition. This ensures that only the specified partitions are overwritten, helping to maintain performance and data consistency. Note that this feature has not been tested with distributed models and may not work with such materializations.
+[Anton Bryzgalov](https://github.com/bryzgaloff) Thank you for your contribution! ([#201](https://github.com/ClickHouse/dbt-clickhouse/pull/201))
+* Schema changes for incremental models were improved and now include a `sync_all_column` option.
+[Can Bekleyici](https://github.com/canbekley) huge thanks for your contribution. ([#332](https://github.com/ClickHouse/dbt-clickhouse/pull/332))
+* Previously, view settings were only applied during view creation, not when querying the view. Starting with this release, the settings attribute will now also be applied when running queries on a view. ([#324](https://github.com/ClickHouse/dbt-clickhouse/pull/324))
+* Enhanced the clickhouse__listagg macro to support single field ordering with optional direction, ensuring compatibility with ClickHouse's sorting limitations. Added validation to prevent the use of multiple order-by fields. ([#318](https://github.com/ClickHouse/dbt-clickhouse/pull/318))
+
+#### Documentation
+* Update the docs with the new `insert_overwrite` incremental strategy. ([#331](https://github.com/ClickHouse/dbt-clickhouse/pull/331)) 
+* Add documentation for codec column configuration. ([#317](https://github.com/ClickHouse/dbt-clickhouse/pull/317))
+ 
 
 ### Release [1.8.1], 2024-07-11
 #### Bug Fix
